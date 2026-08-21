@@ -17,8 +17,19 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Enable CORS for frontend communication
+  const corsOrigin = configService.get<string>('CORS_ORIGIN', 'http://localhost:3000');
+  const allowedOrigins = corsOrigin.split(',').map(o => o.trim());
+  
   app.enableCors({
-    origin: configService.get<string>('CORS_ORIGIN', 'http://localhost:3000'),
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      // Check against allowed origins list
+      if (allowedOrigins.some(allowed => origin === allowed || origin.endsWith('.vercel.app'))) {
+        return callback(null, true);
+      }
+      callback(null, false);
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   });
