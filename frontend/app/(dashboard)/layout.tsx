@@ -4,6 +4,7 @@ import * as React from "react"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { Header } from "@/components/layout/Header"
 import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
 import { CheckSquare, Loader2 } from "lucide-react"
 
 export default function DashboardLayout({
@@ -13,9 +14,15 @@ export default function DashboardLayout({
 }) {
   const [isMobileOpen, setIsMobileOpen] = React.useState(false)
   const { isLoading, user } = useAuth()
+  const router = useRouter()
+
+  React.useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login")
+    }
+  }, [isLoading, user, router])
 
   // Wait for auth to initialize before rendering the protected shell
-  // (Middleware prevents unauthorized access, but client context needs to hydrate)
   if (isLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary/30 flex-col gap-4">
